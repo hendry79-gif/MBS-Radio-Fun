@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>MBS Klazienaveen - Radio & Weer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Achtergrondafbeeldingen -->
+  <div id="video-background"></div>
+  <script>
+    // Zet direct de eerste achtergrond, en wissel elke 50 seconden
+    const images = [
+      'Foto1.jpg', 'Foto2.jpg', 'Foto3.jpg', 'Foto4.jpg', 'Foto5.jpg', 'Foto6.jpg', 'Foto7.jpg', 'Foto8.jpg', 'Foto9.jpg', 'Foto10.jpg', 'Foto11.jpg', 'Foto12.jpg', 'Foto13.jpg', 'Foto14.jpg'
+    ];
+    let idx = 0;
+    const bg = document.getElementById('video-background');
+    function setBG() {
+      bg.style.backgroundImage = `url('${images[idx]}')`;
+      bg.style.backgroundColor = '';
+    }
+    setBG();
+    setInterval(() => {
+      idx = (idx + 1) % images.length;
+      setBG();
+    }, 50000);
+  </script>
+
+  <!-- Weeronline widget (links boven) -->
+  <div class="weeronline-container">
+    <div class="weeronline-widget">
+      <iframe
+        title="Weeronline Radar"
+        frameborder="0"
+        scrolling="no"
+        loading="lazy"
+        src="https://www.weeronline.nl/widget/radar?id=4057148&circle=true&noAnalytics=true"
+        style="width:100%;height:350px;">
+      </iframe>
+    </div>
+  </div>
+
+  <!-- Meteoblue Widget (rechts boven) -->
+  <div class="weather-container">
+    <iframe
+      src="https://www.meteoblue.com/en/weather/widget/three/klazienaveen_the-netherlands_2752798?geoloc=fixed&nocurrent=0&noforecast=0&days=4&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&layout=image"
+      frameborder="0"
+      scrolling="NO"
+      allowtransparency="true"
+      sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox"
+      style="width: 460px; height: 590px;">
+    </iframe>
+    <div>
+      <a href="https://www.meteoblue.com/en/weather/week/klazienaveen_the-netherlands_2752798" target="_blank" rel="noopener">meteoblue</a>
+    </div>
+  </div>
+
+  <!-- NOS Nieuws Widget (links onder) -->
+  <div class="nos-widget">
+    <h3>Laatste NOS Nieuws</h3>
+    <ul id="nos-feed"></ul>
+  </div>
+
+  <!-- Hoofdcontent en radio -->
+  <div class="content">
+    <h1>MBS Klazienaveen</h1>
+    <section>
+      <select id="radioSelect">
+        <!-- https://streamurl.link/ -->
+        <option value="https://22333.live.streamtheworld.com/RADIO538.mp3">Radio 538</option>
+        <option value="https://23603.live.streamtheworld.com/100PNL_MP3_SC">100% NL</option>
+        <option value="https://radiostreamfm.com/listen/dolfijn_97.3_fm/radio.mp3">Dolfijn FM</option>
+        <option value="https://icecast-qmusicnl-cdp.triple-it.nl/Joe_nl.mp3">JOE</option>
+        <option value="https://icecast.omroep.nl/radio5-bb-mp3">Radio 5</option>
+        <option value="https://22333.live.streamtheworld.com/RADIO10.mp3">Radio 10</option>
+        <option value="https://22593.live.streamtheworld.com/VERONICA.mp3">Radio Veronica</option>
+        <option value="https://22333.live.streamtheworld.com/SKYRADIO.mp3">Sky Radio</option>
+        <option value="https://stream.tukkerfm.nl/tukkerfm">TukkerFM</option>
+        <option value="https://icecast-qmusicnl-cdp.triple-it.nl/Qmusic_nl_live.mp3">Qmusic</option>
+        <option value="https://20043.live.streamtheworld.com/SLAM_MP3_SC">Slam!</option>
+        <option value="https://25293.live.streamtheworld.com/WEB16_MP3_SC">Slam! Housuh in de Pauzuh</option>
+        <option value="http://stream.antenne.de/antenne/stream/mp3">ANTENNE BAYERN</option>
+        <option value="https://radiovm1.fluidstream.eu/radiovm1.mp3">Radio VM1</option>
+        <option value="https://live.u1-radio.at/u1-tirol-live/">U1 Tirol</option>
+        <option value="http://topcongofm2.ice.infomaniak.ch/topcongofm2-96.mp3">Top Congo FM</option>
+      </select>
+      <br><br>
+      <audio id="radioPlayer" autoplay>
+        <source src="https://22333.live.streamtheworld.com/RADIO538.mp3" type="audio/mpeg">
+        Je browser ondersteunt geen audio.
+      </audio>
+      <button id="playPauseBtn">⏯ Play/Pause</button>
+      <script>
+        // Radio functionaliteit
+        const radioSelect = document.getElementById('radioSelect');
+        const radioPlayer = document.getElementById('radioPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        radioPlayer.volume = 1.0;
+        radioSelect.addEventListener('change', function() {
+          radioPlayer.src = this.value;
+          radioPlayer.play();
+        });
+        playPauseBtn.addEventListener('click', () => {
+          if (radioPlayer.paused) {
+            radioPlayer.play();
+          } else {
+            radioPlayer.pause();
+          }
+        });
+      </script>
+
+      <!-- Refresh scripts -->
+      <script>
+        function refreshWeeronline() {
+          const frame = document.querySelector('.weeronline-widget iframe');
+          if (frame) frame.src = frame.src;
+        }
+
+        function refreshMeteoblue() {
+          const frame = document.querySelector('.weather-container iframe');
+          if (frame) frame.src = frame.src;
+        }
+
+        function loadNosNieuws() {
+          fetch("https://api.rss2json.com/v1/api.json?rss_url=https://feeds.nos.nl/nosnieuwsalgemeen")
+            .then(response => response.json())
+            .then(data => {
+              let items = data.items.slice(0, 5);
+              let list = document.getElementById("nos-feed");
+              list.innerHTML = ""; // leegmaken
+              items.forEach(item => {
+                let li = document.createElement("li");
+                li.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a>`;
+                list.appendChild(li);
+              });
+            });
+        }
+
+        // Eerste keer laden
+        loadNosNieuws();
+
+        // Elke 30 minuten refresh
+        setInterval(refreshWeeronline, 30 * 60 * 1000);
+        setInterval(refreshMeteoblue, 30 * 60 * 1000);
+        setInterval(loadNosNieuws, 30 * 60 * 1000);
+      </script>
+
+    </section>
+  </div>
+</body>
+</html>
